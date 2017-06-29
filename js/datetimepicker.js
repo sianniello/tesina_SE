@@ -53,8 +53,11 @@ function getAverage() {
     xhr.onreadystatechange = function() {
         if (xhr.readyState == 4 && xhr.status == 200){
             var xml = xhr.responseXML;
-            if (xml)
-                alert(xml.getElementsByTagName('avg_value')[0].childNodes[0].nodeValue);
+            if (xml) {
+                avg = xml.getElementsByTagName('avg_value')[0].childNodes[0].nodeValue;
+                alert(avg);
+                $('p').text('Avarage people in selected range: ' + avg);
+            }
             else
                 alert('No values in range');
         }
@@ -62,13 +65,3 @@ function getAverage() {
     xhr.open("GET", "http://localhost:3000/cams/1/avg/start/"+start+"/end/"+end, true); // true for asynchronous
     xhr.send(null);
 }
-
-
-$(document).ready(function(){
-    var socket = io.connect('http://stenomyapp.ddns.net:5000');
-    socket.on('message', function() {
-        //alert('update');
-        drawChart()
-        $('#myImage').attr("src","http://stenomyapp.ddns.net:5000/cams/1/get_image?type=1");
-    });
-});
