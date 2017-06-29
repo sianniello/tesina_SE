@@ -2,6 +2,7 @@ $(function() {
     $('input[name="daterange"]').daterangepicker({
         "timePicker": true,
         "timePickerIncrement": 30,
+        "timePicker24Hour": true,
         "locale": {
             "format": "DD/MM/YYYY",
             "separator": " - ",
@@ -37,39 +38,37 @@ $(function() {
             "firstDay": 1
         },
         "showCustomRangeLabel": false,
-        //"startDate": "06/22/2017",
-        //"endDate": "06/28/2017",
-        "drops": "up"
+        "drops": "down"
     });
 });
 
 function getAverage() {
     var drp = $('#daterange').data('daterangepicker');
-    var start = new Date(drp.startDate).getTime();
-    var end = new Date(drp.endDate).getTime();
+    var start = new Date(drp.startDate/1000).getTime().toString();
+    var end = new Date(drp.endDate/1000).getTime().toString();
+    var xhr = new XMLHttpRequest();
 
-    alert(start + ' ' + end);
-
-    var xmlHttp = new XMLHttpRequest();
-    xmlHttp.responseType = '';
-    xmlHttp.overrideMimeType('text/xml');
-    xmlHttp.onreadystatechange = function() {
-        if (xmlHttp.readyState == 4 && xmlHttp.status == 200){
-            var xml = xmlHttp.responseXML;
-            //TODO
-            //var avg = xml.getElementsByTagName('average');
-            alert(xml);
+    xhr.responseType = '';
+    xhr.overrideMimeType('text/xml');
+    xhr.onreadystatechange = function() {
+        if (xhr.readyState == 4 && xhr.status == 200){
+            var xml = xhr.responseXML;
+            if (xml)
+                alert(xml.getElementsByTagName('avg_value')[0].childNodes[0].nodeValue);
+            else
+                alert('No values in range');
         }
-        else alert('No response');
     };
-    xmlHttp.open("GET", "http://localhost:3000/cams/1/avg", true); // true for asynchronous
-    xmlHttp.send(null);
-};
+    xhr.open("GET", "http://localhost:3000/cams/1/avg/start/"+start+"/end/"+end, true); // true for asynchronous
+    xhr.send(null);
+}
 
-//TODO
+
 $(document).ready(function(){
-    var socket = io.connect('http://stenomyapp.ddns.net:5000/ws');
-    socket.on('response', function() {
+    var socket = io.connect('http://stenomyapp.ddns.net:5000');
+    socket.on('message', function() {
+        //alert('update');
         drawChart()
+        $('#myImage').attr("src","http://stenomyapp.ddns.net:5000/cams/1/get_image?type=1");
     });
 });

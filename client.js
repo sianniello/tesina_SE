@@ -10,6 +10,23 @@ var express = require('express'),
 
 var app = module.exports = express();
 
+var allowCrossDomain = function(req, res, next) {
+    res.setHeader("Access-Control-Allow-Origin", "*");
+    res.setHeader("Access-Control-Allow-Credentials", "true");
+    res.setHeader("Access-Control-Allow-Methods", "GET,HEAD,OPTIONS,POST,PUT");
+    res.setHeader("Access-Control-Allow-Headers", "Access-Control-Allow-Headers, Origin,Accept, X-Requested-With, Content-Type, Access-Control-Request-Method, Access-Control-Request-Headers");
+
+    // intercept OPTIONS method
+    if ('OPTIONS' == req.method) {
+        res.sendStatus(200);
+    }
+    else {
+        next();
+    }
+};
+
+app.use(allowCrossDomain);
+
 app.set('port', process.env.PORT || 3000);
 app.use(bodyParser.json());
 app.use(methodOverride());
@@ -40,10 +57,17 @@ app.get("/cams", function(req, res){
     );
 });
 
-app.get("/cams/1/avg", function(req, res){
+app.get("/cams/1/avg/start/:start/end/:end", function(req, res){
     var request = require('request');
-    request(
-        {url: 'http://stenomyapp.ddns.net:5000/cams/1/avg'},
+    console.log(req.params.start);
+    console.log(req.params.end);
+    var start = req.params.start;
+    var end = req.params.end;
+    var propertiesObject = { start:start, end:end };
+    request({
+            url: 'http://stenomyapp.ddns.net:5000/cams/1/avg',
+            qs: propertiesObject
+        },
         function (error, response) {
             res.header('Access-Control-Allow-Origin', '*');
             if (typeof response == "undefined") {
